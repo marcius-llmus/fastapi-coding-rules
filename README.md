@@ -4,6 +4,7 @@ I created this architecture for our LLM rules. It uses the repository pattern wi
 I tried to enforce a rule where service layers have a clear interface that callers must respect. For example, I'm using Pydantic models as DTOs to define the inputs.
 This does make things more coupled. Often, if a service wants to call another, it may have to import schemas from the other app to meet the input requirements. (This won't happen all the time, as most cross-service calls will probably use primitive types like int or str, so we won't have to build objects manually).
 The risk of circular imports also exists, especially with nested cross-service models, so it's important to maintain one-way nesting. But in general, I think this approach is good enough for our needs.
+
 ---
 
 ### Project Structure
