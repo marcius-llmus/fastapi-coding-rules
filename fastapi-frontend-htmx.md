@@ -1,4 +1,4 @@
-# FastAPI-HTMX Architecture Rules
+# FastAPI-HTMX Architecture Rules (MUST STRICTLY FOLLOW)
 
 ### Guiding Philosophy
 
@@ -166,3 +166,29 @@ def create_wallet(
 ):
     # The route now works with a validated Pydantic object
 ```
+
+#### 6. Rule: Use Manual Rendering for Simple, Full-Page Endpoints
+
+For endpoints that serve only as a static entry point or a full-page shell and are not intended to be the target of an HTMX swap, it is clearer and more direct to bypass the `@htmx` decorator and use FastAPI’s native `TemplateResponse`.
+
+This approach avoids the boilerplate of supplying both `partial_template_name` and `full_template_name` to the decorator when its dual-purpose logic is unnecessary. It makes the endpoint’s single responsibility explicit: to serve a complete HTML document.
+
+-   **When to use**: For top-level page routes like `/dashboard`, `/settings`, etc., that primarily act as containers for other HTMX-driven components.
+-   **How to implement**: Import your `Jinja2Templates` instance and call `templates.TemplateResponse()` directly.
+
+Example: A static page endpoint
+
+# In app/settings/routes/htmx.py
+from fastapi import APIRouter, Request
+from fastapi.responses import HTMLResponse
+# Assuming ‘templates’ is initialized in ‘app.main’ and is importable
+from app.main import templates
+
+router = APIRouter()
+
+@router.get("/", response_class=HTMLResponse, name="view_settings")
+async def view_settings_page(request: Request):
+    """Manually renders the main settings page."""
+    return templates.TemplateResponse(
+        "settings/pages/main.html", {"request": request}
+    )
