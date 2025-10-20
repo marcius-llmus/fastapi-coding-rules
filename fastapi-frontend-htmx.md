@@ -200,4 +200,4 @@ async def view_settings_page(
     return templates.TemplateResponse(
         "settings/pages/main.html", {"request": request, **page_data}
     )
-``
+```
