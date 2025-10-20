@@ -176,19 +176,26 @@ This approach avoids the boilerplate of supplying both `partial_template_name` a
 -   **When to use**: For top-level page routes like `/dashboard`, `/settings`, etc., that primarily act as containers for other HTMX-driven components.
 -   **How to implement**: Import your `Jinja2Templates` instance and call `templates.TemplateResponse()` directly.
 
-Example: A static page endpoint
+Example: A full-page endpoint using an orchestrator service.
 
-# In app/settings/routes/htmx.py
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Depends, Request
 from fastapi.responses import HTMLResponse
-# Assuming ‘templates’ is initialized in ‘app.main’ and is importable
-from app.main import templates
+from app.core.templating import templates  # Import from the correct core module
+from app.settings.dependencies import get_settings_service  # Dependency for the service
+from app.settings.services import SettingsService  # The orchestrator service
 
 router = APIRouter()
 
 @router.get("/", response_class=HTMLResponse, name="view_settings")
-async def view_settings_page(request: Request):
-    """Manually renders the main settings page."""
+async def view_settings_page(
+    request: Request,
+    service: SettingsService = Depends(get_settings_service),
+):
+    """
+    Manually renders the main settings page, aggregating all necessary data
+    from the orchestrator service, consistent with the Aggregator Page Pattern.
+    """
+    page_data = service.get_settings_page_data()
     return templates.TemplateResponse(
-        "settings/pages/main.html", {"request": request}
+        "settings/pages/main.html", {"request": request, **page_data}
     )
