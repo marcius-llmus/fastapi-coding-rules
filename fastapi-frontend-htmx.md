@@ -54,6 +54,53 @@ Example: The full-page template uses `include`.
 </div>
 ```
 
+-   **Initialization**: Instead of a single `Jinja2Templates` instance, `htmx_init()` is configured with a dictionary where keys are collection names and values are the corresponding `Jinja2Templates` instances.
+-   **Usage**: When decorating a route, you use the `TemplateSpec` (aliased as `Tpl`) to specify both the collection name and the template file name.
+
+This pattern allows for better encapsulation and scaling of the presentation layer in a micro-frontend or multi-module architecture.
+
+**Example: Initializing Multiple Template Collections**
+
+```python
+# main.py or app.py
+
+from pathlib import Path
+from fastapi import FastAPI
+from fastapi.templating import Jinja2Templates
+from fastapi_htmx import htmx_init, TemplateSpec as Tpl
+
+# Define unique names for each template collection
+SHOP = "shop"
+DASHBOARD = "dashboard"
+
+# Initialize the FastAPI app
+app = FastAPI()
+
+# Create a dictionary mapping collection names to Jinja2Templates instances
+templates = {
+    SHOP: Jinja2Templates(directory=Path("app") / SHOP / "templates"),
+    DASHBOARD: Jinja2Templates(directory=Path("app") / DASHBOARD / "templates"),
+}
+
+# Initialize fastapi-htmx with the collections
+htmx_init(templates=templates)
+```
+
+**Example: Using a Named Collection in a Route**
+
+```python
+# app/shop/routes/htmx.py
+from fastapi_htmx import htmx, TemplateSpec as Tpl
+from app.xyz.constants import SHOP # Import the collection name constant
+
+@router.get("/products", name="list_products")
+# Use Tpl(COLLECTION_NAME, "template_path.jinja2")
+@htmx(Tpl(SHOP, "pages/product_list.jinja2"))
+def get_product_list(...):
+    # ... service logic
+    return {"products": ...}
+```
+
 #### 2. Rule: Use Separate, Explicit Endpoints for Pages and Partials
 
 We will NOT use the dual-purpose `full_template_name` argument in the `@htmx` decorator. Every view, whether a full page or a partial fragment, will have its own dedicated endpoint. This enforces the Single Responsibility Principle at the route layer.
