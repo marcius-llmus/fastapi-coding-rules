@@ -178,6 +178,7 @@ This approach avoids the boilerplate of supplying both `partial_template_name` a
 
 Example: A full-page endpoint using an orchestrator service.
 
+```python
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import HTMLResponse
 from app.core.templating import templates  # Import from the correct core module
@@ -199,3 +200,4 @@ async def view_settings_page(
     return templates.TemplateResponse(
         "settings/pages/main.html", {"request": request, **page_data}
     )
+``
